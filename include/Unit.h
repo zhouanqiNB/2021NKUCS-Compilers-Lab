@@ -8,7 +8,6 @@ class Unit
 {
     typedef std::vector<Function *>::iterator iterator;
     typedef std::vector<Function *>::reverse_iterator reverse_iterator;
-
 private:
     std::vector<Function *> func_list;
 public:

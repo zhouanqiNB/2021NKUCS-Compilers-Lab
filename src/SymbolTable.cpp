@@ -1,7 +1,7 @@
 #include "SymbolTable.h"
 #include <iostream>
 #include <sstream>
-
+using namespace std;
 SymbolEntry::SymbolEntry(Type *type, int kind) 
 {
     this->type = type;
@@ -70,8 +70,67 @@ SymbolTable::SymbolTable(SymbolTable *prev)
 */
 SymbolEntry* SymbolTable::lookup(std::string name)
 {
+    std::cout<<"finding "<<name<<endl;
+
+    SymbolEntry* result=nullptr;
     // Todo
-    return nullptr;
+    /*
+     * 一个临时的符号表指针，首先指向自己
+     * 如果查完了这个符号表没找到，去上一个符号表找
+     * 一直到结束都没找到，break
+     */
+    SymbolTable* s=this;                        //用以遍历符号表
+    map<string, SymbolEntry*>::iterator it;     //用以遍历符号表项
+    bool found=false;
+
+    for(;s->prev;s=s->prev){
+        for(it=s->symbolTable.begin();it!=s->symbolTable.end();it++){
+            //std::cout<<it->first<<":"<<it->second<<endl;
+
+            if(it->first==name){
+                std::cout<<"found "<<name<<"!"<<endl;
+                found=true;
+                //结果就是这个映射的右侧
+                result=it->second;
+                break;
+            }
+
+        }
+
+
+        if(found){
+            break;
+        }else{
+            //std::cout<<"going to prev……"<<endl;
+        }
+    }
+    
+    if(!found){
+        //std::cout<<"prev is empty!"<<endl;
+        //std::cout<<"going to globals..."<<endl;
+
+        s=globals;
+        for(it=s->symbolTable.begin();it!=s->symbolTable.end();it++){
+            //std::cout<<it->first<<":"<<it->second<<endl;
+
+            if(it->first==name){
+                std::cout<<"found "<<name<<"!"<<endl;
+                found=true;
+                //结果就是这个映射的右侧
+                result=it->second;
+                break;
+            }
+
+        }
+    }
+
+
+    if(!found){
+        std::cout<<"not found \""<<name<<"\"!"<<endl;
+    }
+
+    return result;
+
 }
 
 // install the entry into current symbol table.

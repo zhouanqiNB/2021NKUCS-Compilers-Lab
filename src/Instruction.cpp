@@ -58,7 +58,7 @@ BinaryInstruction::BinaryInstruction(unsigned opcode, Operand *dst, Operand *src
     operands.push_back(dst);
     operands.push_back(src1);
     operands.push_back(src2);
-    dst->setDef(this);
+    dst->setDef(this);//?
     src1->addUse(this);
     src2->addUse(this);
 }

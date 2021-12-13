@@ -1,6 +1,7 @@
 #include "Type.h"
 #include <sstream>
 
+// 大小
 IntType TypeSystem::commonInt = IntType(32);
 IntType TypeSystem::commonBool = IntType(1);
 VoidType TypeSystem::commonVoid = VoidType();

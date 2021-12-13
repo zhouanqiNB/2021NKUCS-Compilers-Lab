@@ -11,7 +11,7 @@ std::string Operand::toStr() const
 void Operand::removeUse(Instruction *inst)
 {
     auto i = std::find(uses.begin(), uses.end(), inst);
-    if(i != uses.end())
+    if(i != uses.end())//?
         uses.erase(i);
 }
 

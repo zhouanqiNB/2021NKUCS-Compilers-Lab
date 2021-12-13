@@ -7,7 +7,9 @@
 #include "Type.h"
 
 extern FILE *yyout;
+// 全局的counter
 int Node::counter = 0;
+// 全局的builder
 IRBuilder* Node::builder = nullptr;
 
 Node::Node()
@@ -17,17 +19,23 @@ Node::Node()
 
 void Node::backPatch(std::vector<Instruction*> &list, BasicBlock*bb)
 {
+    // 遍历list内的每一条指令
     for(auto &inst:list)
     {
         if(inst->isCond())
+            // 把inst转为CondBrInstruction指针，并且设置TrueBranch
             dynamic_cast<CondBrInstruction*>(inst)->setTrueBranch(bb);
+
+        // Todo
         else if(inst->isUncond())
+            // 把inst转为无条件跳转指令，并且设置branch
             dynamic_cast<UncondBrInstruction*>(inst)->setBranch(bb);
     }
 }
 
 std::vector<Instruction*> Node::merge(std::vector<Instruction*> &list1, std::vector<Instruction*> &list2)
 {
+    // 把list2加到list1后面
     std::vector<Instruction*> res(list1);
     res.insert(res.end(), list2.begin(), list2.end());
     return res;
@@ -35,6 +43,7 @@ std::vector<Instruction*> Node::merge(std::vector<Instruction*> &list1, std::vec
 
 void Ast::genCode(Unit *unit)
 {
+    // 新建一个builder
     IRBuilder *builder = new IRBuilder(unit);
     Node::setIRBuilder(builder);
     root->genCode();
@@ -53,16 +62,19 @@ void FunctionDef::genCode()
     /**
      * Construct control flow graph. You need do set successors and predecessors for each basic block.
      * Todo
-    */
+     * 构建控制流图，
+     * 你需要为每个基本块设置前驱和后继。
+     */
    
 }
+void UnaryExpr::genCode(){
 
-void BinaryExpr::genCode()
-{
+}
+void BinaryExpr::genCode(){
+    // 获取需要插入的那个基本块
     BasicBlock *bb = builder->getInsertBB();
     Function *func = bb->getParent();
-    if (op == AND)
-    {
+    if (op == AND){
         BasicBlock *trueBB = new BasicBlock(func);  // if the result of lhs is true, jump to the trueBB.
         expr1->genCode();
         backPatch(expr1->trueList(), trueBB);
@@ -71,23 +83,19 @@ void BinaryExpr::genCode()
         true_list = expr2->trueList();
         false_list = merge(expr1->falseList(), expr2->falseList());
     }
-    else if(op == OR)
-    {
+    else if(op == OR){
         // Todo
     }
-    else if(op >= LESS && op <= GREATER)
-    {
+    else if(op >= LESS && op <= GRAN){
         // Todo
     }
-    else if(op >= ADD && op <= SUB)
-    {
+    else if(op >= ADD && op <= SUB){
         expr1->genCode();
         expr2->genCode();
         Operand *src1 = expr1->getOperand();
         Operand *src2 = expr2->getOperand();
         int opcode;
-        switch (op)
-        {
+        switch (op){
         case ADD:
             opcode = BinaryInstruction::ADD;
             break;
@@ -110,7 +118,30 @@ void Id::genCode()
     Operand *addr = dynamic_cast<IdentifierSymbolEntry*>(symbolEntry)->getAddr();
     new LoadInstruction(dst, addr, bb);
 }
+void ExpStmt::genCode(){
 
+}
+void EmptyStmt::genCode(){
+
+}
+void BreakStmt::genCode(){
+    
+}
+void ContinueStmt::genCode(){
+    
+}
+void WhileStmt::genCode(){
+    
+}
+void DeclAssignStmt::genCode(){
+
+}
+void ConstDeclAssignStmt::genCode(){
+    
+}
+void CallFunc::genCode(){
+    
+}
 void IfStmt::genCode()
 {
     Function *func;
@@ -199,7 +230,9 @@ void Ast::typeCheck()
     if(root != nullptr)
         root->typeCheck();
 }
+void UnaryExpr::typeCheck(){
 
+}
 void FunctionDef::typeCheck()
 {
     // Todo
@@ -218,6 +251,30 @@ void Constant::typeCheck()
 void Id::typeCheck()
 {
     // Todo
+}
+void ExpStmt::typeCheck(){
+
+}
+void EmptyStmt::typeCheck(){
+
+}
+void BreakStmt::typeCheck(){
+    
+}
+void ContinueStmt::typeCheck(){
+    
+}
+void WhileStmt::typeCheck(){
+    
+}
+void DeclAssignStmt::typeCheck(){
+
+}
+void ConstDeclAssignStmt::typeCheck(){
+    
+}
+void CallFunc::typeCheck(){
+    
 }
 
 void IfStmt::typeCheck()
@@ -255,6 +312,36 @@ void AssignStmt::typeCheck()
     // Todo
 }
 
+void Ast::output()
+{
+    fprintf(yyout, "program\n");
+    if(root != nullptr)
+        root->output(4);
+}
+void UnaryExpr::output(int level)
+{
+    std::string op_str;
+    switch(op)
+    {
+        case ADD:
+            op_str = "add";
+            break;
+        case SUB:
+            op_str = "sub";
+            break;
+        case NOT:
+            op_str = "not";
+            break;
+    }
+    fprintf(yyout, "%*cUnaryExpr\top: %s\n", level, ' ', op_str.c_str());
+    expr->output(level + 4);
+}
+void CallFunc::output(int level)
+{
+    fprintf(yyout, "%*cCallFunc\tfuncName: %s\n", level, ' ', funcName);
+    if(para!=nullptr)
+        para->output(level+4);
+}
 void BinaryExpr::output(int level)
 {
     std::string op_str;
@@ -281,12 +368,7 @@ void BinaryExpr::output(int level)
     expr2->output(level + 4);
 }
 
-void Ast::output()
-{
-    fprintf(yyout, "program\n");
-    if(root != nullptr)
-        root->output(4);
-}
+
 
 void Constant::output(int level)
 {
@@ -307,7 +389,26 @@ void Id::output(int level)
     fprintf(yyout, "%*cId\tname: %s\tscope: %d\ttype: %s\n", level, ' ',
             name.c_str(), scope, type.c_str());
 }
-
+//=================================
+void ExpStmt::output(int level){
+    fprintf(yyout, "%*cExpStmt\n", level, ' ');
+    expr->output(level+4);
+};
+void EmptyStmt::output(int level){
+    fprintf(yyout, "%*cEmptyStmt\n", level, ' ');
+};
+void BreakStmt::output(int level){
+    fprintf(yyout, "%*cBreakStmt\n", level, ' ');
+};
+void ContinueStmt::output(int level){
+    fprintf(yyout, "%*cContinueStmt\n", level, ' ');
+};
+void WhileStmt::output(int level){
+    fprintf(yyout, "%*cWhileStmt\n", level, ' ');
+    cond->output(level+4);
+    stmt->output(level+4);
+};
+//=====================================
 void CompoundStmt::output(int level)
 {
     fprintf(yyout, "%*cCompoundStmt\n", level, ' ');
@@ -326,7 +427,18 @@ void DeclStmt::output(int level)
     fprintf(yyout, "%*cDeclStmt\n", level, ' ');
     id->output(level + 4);
 }
-
+void DeclAssignStmt::output(int level)
+{
+    fprintf(yyout, "%*cDeclAssignStmt\n", level, ' ');
+    id->output(level + 4);
+    expr->output(level+4);
+}
+void ConstDeclAssignStmt::output(int level)
+{
+    fprintf(yyout, "%*cConstDeclAssignStmt\n", level, ' ');
+    id->output(level + 4);
+    expr->output(level+4);
+}
 void IfStmt::output(int level)
 {
     fprintf(yyout, "%*cIfStmt\n", level, ' ');

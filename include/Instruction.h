@@ -9,26 +9,30 @@ class BasicBlock;
 
 class Instruction
 {
+protected:
+    unsigned instType;  // 指令类型
+    unsigned opcode;    // 指令操作码
+    Instruction *prev;  // 指令前驱
+    Instruction *next;  // 指令后继
+    BasicBlock *parent; // 指令所在的基本块
+    std::vector<Operand*> operands; // 指令的操作数
+    enum {BINARY, COND, UNCOND, RET, LOAD, STORE, CMP, ALLOCA};
 public:
     Instruction(unsigned instType, BasicBlock *insert_bb = nullptr);
     virtual ~Instruction();
     BasicBlock *getParent();
-    bool isUncond() const {return instType == UNCOND;};
-    bool isCond() const {return instType == COND;};
+    bool isUncond() const {return instType == UNCOND;}; //非条件跳转
+    bool isCond() const {return instType == COND;}; //条件跳转
+
     void setParent(BasicBlock *);
+
     void setNext(Instruction *);
     void setPrev(Instruction *);
     Instruction *getNext();
     Instruction *getPrev();
+
     virtual void output() const = 0;
-protected:
-    unsigned instType;
-    unsigned opcode;
-    Instruction *prev;
-    Instruction *next;
-    BasicBlock *parent;
-    std::vector<Operand*> operands;
-    enum {BINARY, COND, UNCOND, RET, LOAD, STORE, CMP, ALLOCA};
+
 };
 
 // meaningless instruction, used as the head node of the instruction list.
